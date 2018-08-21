@@ -1,0 +1,11 @@
+--- /home/brain/Downloads/test_adversary/models/preact_resnet.py
++++ /home/brain/Downloads/test_adversary/models/preact_resnet.py
+@@ -48,7 +48,7 @@
+         relus.extend(out[:2])        
+ 
+         out = self.layer6(out[2])
+-        relus.extend(out[:2])
++        relus.extend(out[:2])        
+ 
+         out = self.layer7(out[2])
+         relus.extend(out[:2])        
