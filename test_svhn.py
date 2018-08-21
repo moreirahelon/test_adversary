@@ -47,17 +47,14 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle
 
 folders = [
             #["Vanilla","results/False_False_False_0.0_0.0_1_0_True_0/ckpt.t7"]
-            ["Adversary","results/True_False_False_0.0_0.0_1_0_True_0/ckpt.t7"]
-            #["Adversary + Parseval","results//ckpt.t7"]
+            #["Adversary","results/True_False_False_0.0_0.0_1_0_True_0/ckpt.t7"]
+            #["Adversary + Parseval","results/True_False_False_0.01_0.0_1_0_True_0/ckpt.t7"]
           ]
-          
-    #Don't forget to use the correct folder for each case !
-path = "results/True_False_False_0.0_0.0_1_0_True_0/"
 
 for name,folder in folders:
 
     print('==> Resuming from checkpoint.. {}'.format(folder))
-    checkpoint = torch.load(folder)
+    checkpoint = torch.load(folder + "ckpt.t7")
     net = checkpoint['net']
 
     if use_cuda:
@@ -83,7 +80,7 @@ for name,folder in folders:
             x = Variable(ox, requires_grad=True)
             y = Variable(y.cuda())
             _, output = net(x,normalize=False)
-
+            
             #attack
             net.zero_grad()
             loss = loss_func(output, y)
@@ -125,4 +122,4 @@ for name,folder in folders:
         else:
             dataframe = pd.concat([dataframe,pd.DataFrame(result_dict,index=[0])])
         #dataframe.to_csv("tests.csv")
-        dataframe.to_pickle(path + "testAdversary_svhn.pkl")
+        dataframe.to_pickle(folder + "testAdversary_svhn.pkl")

@@ -326,7 +326,7 @@ if args.da:
 else:
     if args.svhn:
         epoch_start = [0,5] #the graph of loss becomes horizontal really fast with lr=0.1
-        epoch_end =  [5,100]
+        epoch_end =  [5,55]
         for period in range(2):
             if period == 0:
                 optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
