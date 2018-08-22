@@ -46,9 +46,9 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle
 #testloader.dataset.data.shape  (26032, 3, 32, 32)
 
 folders = [
-            #["Vanilla","results/False_False_False_0.0_0.0_1_0_True_0/ckpt.t7"]
-            #["Adversary","results/True_False_False_0.0_0.0_1_0_True_0/ckpt.t7"]
-            #["Adversary + Parseval","results/True_False_False_0.01_0.0_1_0_True_0/ckpt.t7"]
+            #["Vanilla","results/False_False_False_0.0_0.0_1_0_True_0/"]
+            #["Adversary","results/True_False_False_0.0_0.0_1_0_True_0/"]
+            ["Adversary + Parseval","results/True_False_False_0.01_0.0_1_0_True_0/"]
           ]
 
 for name,folder in folders:
@@ -121,5 +121,5 @@ for name,folder in folders:
             dataframeStarted = True
         else:
             dataframe = pd.concat([dataframe,pd.DataFrame(result_dict,index=[0])])
-        #dataframe.to_csv("tests.csv")
+        #dataframe.to_csv(folder + "testAdversary_svhn.csv")
         dataframe.to_pickle(folder + "testAdversary_svhn.pkl")

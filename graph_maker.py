@@ -46,9 +46,9 @@ plt.savefig(os.path.join(path, 'loss'), dpi = 500,format = 'png', frameon = Fals
     #plot only logloss   -------------------------------
 fig, (ax1,ax2) = plt.subplots(1,2)
 fig.set_size_inches(20, 8, forward=True)
-data_train.plot(y="logloss",ax=ax1, title="Train", grid = True)
-data_test.plot(y="logloss",ax=ax2, title="Test", grid = True)
-plt.savefig(os.path.join(path, 'logloss'),dpi = 500, format = 'png', frameon = False)
+data_train.plot(y="log_loss",ax=ax1, title="Train", grid = True)
+data_test.plot(y="log_loss",ax=ax2, title="Test", grid = True)
+plt.savefig(os.path.join(path, 'log_loss'),dpi = 500, format = 'png', frameon = False)
 
     #plot only smooth loss   -------------------------------
 fig, (ax1,ax2) = plt.subplots(1,2)
