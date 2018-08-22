@@ -40,7 +40,6 @@ fig, (ax1,ax2) = plt.subplots(1,2)
 fig.set_size_inches(20, 8, forward=True)
 data_train.plot(y="loss",ax=ax1, title="Train", grid = True)
 data_test.plot(y="loss",ax=ax2, title="Test", grid = True)
-
 plt.savefig(os.path.join(path, 'loss'), dpi = 500,format = 'png', frameon = False)
 
     #plot only logloss   -------------------------------

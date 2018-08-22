@@ -22,7 +22,7 @@ from gsp import force_smooth_network
 import tqdm
 
 torch.nn.Module.dump_patches = True
-parser = argparse.ArgumentParser(description='PyTorch svhn Test adversarial')
+parser = argparse.ArgumentParser(description='PyTorch SVHN Test Adversarial')
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
@@ -39,7 +39,7 @@ transform_test = transforms.Compose([
 batch_size = 1
 dataframeStarted = False
 
-testset = torchvision.datasets.SVHN(root='/home/brain/pytorch-cifar/data', split="test", download=True, transform=transform_test)
+testset = torchvision.datasets.SVHN(root='/home/brain/pytorch-svhn/data', split="test", download=True, transform=transform_test)
 #testset.data.shape  (26032, 3, 32, 32)
 
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
@@ -75,7 +75,7 @@ for name,folder in folders:
         _diff_limit = list()
         for (ox, y) in tqdm.tqdm(testloader):
             # ox.shape   torch.Size([1, 3, 32, 32])  y.shape    torch.Size([1])
-            total += ox.size()[0]   #add 100 every loop
+            total += ox.size()[0]   #add 100 every loop, maybe except the last
             ox = ox.cuda()
             x = Variable(ox, requires_grad=True)
             y = Variable(y.cuda())
@@ -91,8 +91,8 @@ for name,folder in folders:
             _diff_limit.append(diff_limit)
             noise = diff_limit * torch.sign(x.grad.data)
 
-
             x2 = ox + noise
+            x2 = torch.clamp(x2,0,1)    #the values for svhn are between 0 and 1
             x2 = Variable((x2.cuda()))
             x = Variable((ox.cuda()))
 
@@ -104,7 +104,6 @@ for name,folder in folders:
             _, f2 = net(x,normalize=False)
             _, predicted = torch.max(f2, 1)
             top1 += float((predicted.data.cpu() == y.data.cpu()).sum())
-
             _, f2 = net(x2,normalize=False)
             _, predicted = torch.max(f2, 1)
             top1_under_attack += float((predicted.data.cpu() == y.data.cpu()).sum())

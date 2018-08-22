@@ -1,4 +1,4 @@
-'''Train CIFAR10 with PyTorch.'''
+'''TEST ADVERSARIAL FOR CIFAR IMAGES'''
 from __future__ import print_function
 
 import torch
@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
-import random 
-
+import random
+import pandas as pd
 
 import torchvision
 import torchvision.transforms as transforms
@@ -22,7 +22,7 @@ from gsp import force_smooth_network
 import tqdm
 
 torch.nn.Module.dump_patches = True
-parser = argparse.ArgumentParser(description='PyTorch CIFAR10 Training')
+parser = argparse.ArgumentParser(description='PyTorch CIFAR Test Adversarial')
 args = parser.parse_args()
 
 
@@ -40,22 +40,21 @@ transform_test = transforms.Compose([
 ])
 
 batch_size = 1
+dataframeStarted = False
 
 testset = torchvision.datasets.CIFAR10(root='/home/brain/pytorch-cifar/data', train=False, download=True, transform=transform_test)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
-
 folders = [
-            ["Vanilla","results/False_False_False_0.0_0.0_1_0_0/ckpt.t7"],
-            ["Adversarial","results/True_False_False_0.0_0.0_1_0_0/ckpt.t7"],
-            ["Adversarial + Data Augmentation","results/True_False_True_0.0_0.0_1_0_0/ckpt.t7"]
+            ["Vanilla","results/False_False_False_0.0_0.0_1_0_False_0/"],
+            #["Adversarial","results//"],
+            #["Adversarial + Data Augmentation","results//"]
           ]
 
 for name, folder in folders:
 
     print('==> Resuming from checkpoint.. {}'.format(folder))
-    checkpoint = torch.load(folder)
+    checkpoint = torch.load(folder + "ckpt.t7")
     net = checkpoint['net']
 
     if use_cuda:
@@ -116,3 +115,13 @@ for name, folder in folders:
         print("Attacked: {0:.3f}%".format(top1_under_attack/total*100))
         print("SNR", np.array(snr).mean())
         print("Epsilon", np.array(_diff_limit).mean())
+        
+        result_dict = dict(folder=folder,name=name,
+            accuracy=top1_under_attack/total*100,epsilon=wanted_snr)
+        if not dataframeStarted:
+            dataframe = pd.DataFrame(result_dict,index=[0])
+            dataframeStarted = True
+        else:
+            dataframe = pd.concat([dataframe,pd.DataFrame(result_dict,index=[0])])
+        #dataframe.to_csv(folder + "testAdversary_svhn.csv")
+        dataframe.to_pickle(folder + "testAdversary_cifar.pkl")

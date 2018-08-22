@@ -6,8 +6,8 @@ import torch.nn as nn
 import torch.optim as optim
 import torch.nn.functional as F
 import torch.backends.cudnn as cudnn
-import random 
-
+import random
+import pandas as pd
 
 import torchvision
 import torchvision.transforms as transforms
@@ -40,23 +40,21 @@ transform_test = transforms.Compose([
 ])
 
 batch_size = 1
+dataframeStarted = False
 
 testset = torchvision.datasets.CIFAR10(root='/home/brain/pytorch-cifar/data', train=False, download=True, transform=transform_test)
 testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=2)
 
-
-classes = ('plane', 'car', 'bird', 'cat', 'deer', 'dog', 'frog', 'horse', 'ship', 'truck')#classes = ('1', '2', 
-
 folders = [
-            ["Vanilla","results/False_False_False_0.0_0.0_1_0_0/ckpt.t7"],
-            ["Adversarial","results/True_False_False_0.0_0.0_1_0_0/ckpt.t7"],
-            ["Adversarial + Data Augmentation","results/True_False_True_0.0_0.0_1_0_0/ckpt.t7"]
+            ["Vanilla","results/False_False_False_0.0_0.0_1_0_False_0/"],
+            #["Adversarial","results//"],
+            #["Adversarial + Data Augmentation","results//"]
           ]
 
 for name,folder in folders:
 
 #    print('==> Resuming from checkpoint.. {}'.format(folder))
-    checkpoint = torch.load(folder)
+    checkpoint = torch.load(folder + "ckpt.t7")
     net = checkpoint['net']
 
     if use_cuda:
@@ -85,3 +83,12 @@ for name,folder in folders:
         top1 += float((predicted.data.cpu() == y.data.cpu()).sum())
 
     print("Top 1 Accuracy for {0:s}: {1:.3f}%".format(name,top1/total*100))
+    result_dict = dict(folder=folder,name=name,
+            accuracy=top1/total*100))
+        if not dataframeStarted:
+            dataframe = pd.DataFrame(result_dict,index=[0])
+            dataframeStarted = True
+        else:
+            dataframe = pd.concat([dataframe,pd.DataFrame(result_dict,index=[0])])
+    #dataframe.to_csv(folder + "test.csv")
+    dataframe.to_pickle(folder + "test.pkl")
