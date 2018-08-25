@@ -110,8 +110,11 @@ class PreActResNet(nn.Module):
         
         final_out = F.relu(out[2])   # --- 
         relus.append(final_out)      # --- Coloca no final de relus o obnjeto final_out inteiro
+        out = final_out
 	# avg_pool2d(input, kernel_size, stride=None, padding=0, ceil_mode=False, count_include_pad=True) 
-        out = F.avg_pool2d(final_out, 4)   # --- Faz pooling usando a media dos valores
+#        out = F.avg_pool2d(final_out, 4)   # --- Faz pooling usando a media dos valores
+        out = out.view(out.size(0), out.size(1), -1)
+        out = torch.mean(out,2)
         out = out.view(out.size(0), -1)
         out = self.linear(out)
         return relus,out

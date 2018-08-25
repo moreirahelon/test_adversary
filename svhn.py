@@ -35,7 +35,7 @@ def create_adversary(inputs,targets,net,loss_func): #inputs : the images in data
 
 # --- initialize the noise values ​​to be summed (Gaussian distribution values ​​to be applied in the direction of the gradient)
     noise_size = torch.ones(inputs.size()).cuda()       #a tensor of ones is create on GPU
-    nn.init.normal(noise_size, 0, 0.010732325)          #fills noise_size with a normal distributition(mean=0;standard deviation=Epsilon) This Epsilon is obtained in test_adversarial_svhn.py for snr == 33 np.array(_diff_limit).mean()
+    nn.init.normal_(noise_size, 0, 0.010732325)          #fills noise_size with a normal distributition(mean=0;standard deviation=Epsilon) This Epsilon is obtained in test_adversarial_svhn.py for snr == 33 np.array(_diff_limit).mean()
     
     noise_size = torch.clamp(noise_size,-2*0.010732325,2*0.010732325) #use just the elements between +/- 2*Epsilon eliminating outliers
     noise_size = torch.abs(noise_size)                  #takes the absolute value of noise_size
@@ -45,8 +45,6 @@ def create_adversary(inputs,targets,net,loss_func): #inputs : the images in data
     x2 = torch.clamp(x2,0,1)                            #the values for svhn are between 0 and 1
     net.zero_grad()                                     #reset to zero the gradients of all model parameters
     return x2
-
-
 
 parser = argparse.ArgumentParser(description='PyTorch SVHN Training')
 parser.add_argument('-m', default=1, type=int, help='laplacian power')
@@ -59,7 +57,6 @@ parser.add_argument('--hundred', default=False, help='not used in this code')
 parser.add_argument('--svhn', default=True, help='always true for this code')
 parser.add_argument('--seed', default=0, type=int, help='seed')
 args = parser.parse_args()
-
 
 use_cuda = torch.cuda.is_available()
 torch.manual_seed(args.seed)
@@ -85,7 +82,6 @@ else:
 transform_test = transforms.Compose([
     transforms.ToTensor(),
 ])
-
 
 trainset = torchvision.datasets.SVHN(root='/home/brain/pytorch-svhn/data', split="train", download=True, transform=transform_train)
 
