@@ -75,17 +75,17 @@ if args.da:
         transforms.RandomHorizontalFlip(),      #reverse the image horizontally with a probability of 0.5
         transforms.ToTensor(),
         #input[channel] = (input[channel] - mean[channel]) / std[channel]
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])        
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
     ])
 else:
     transform_train = transforms.Compose([
         transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])        
+        transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
     ])
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])            
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],std=[0.229, 0.224, 0.225])
 ])
 
 trainset = torchvision.datasets.ImageFolder('/home/brain/tiny-imagenet-200/train', transform=transform_train)
@@ -107,7 +107,7 @@ if use_cuda:
 criterion = nn.CrossEntropyLoss()
 path = "results/TinyImageNet/{}_{}_{}_{}_{}_{}_{}/".format(args.adversary,args.da,args.beta,args.gamma,args.m,args.k,args.seed)
 try:
-    os.makedirs(path)        
+    os.makedirs(path)
 except:
     pass
 
@@ -122,7 +122,7 @@ def do_parseval(parseval_parameters):
         Ws = W.view(W.size(0),-1)
         W_partial = Ws.data.clone()
         W_partial = (1+args.beta)*W_partial - args.beta*(torch.mm(torch.mm(W_partial,torch.t(W_partial)),W_partial))
-        new = W_partial 
+        new = W_partial
         new = new.view(W.size())
         W.data.copy_(new)
 
@@ -139,7 +139,7 @@ def train(epoch, optimizer):
     train_loss = 0
     correct = 0.
     total = 0.
-    
+
     for batch_idx, (inputs, targets) in enumerate(trainloader):
         if use_cuda:
             inputs, targets = inputs.cuda(), targets.cuda()
@@ -162,12 +162,12 @@ def train(epoch, optimizer):
         else:
             inputs, targets = Variable(inputs), Variable(targets)
             relus, outputs = net(inputs)
-            loss1 = criterion(outputs, targets) 
+            loss1 = criterion(outputs, targets)
         if args.gamma > 0:
             if args.k > 0:
                 loss2 = force_smooth_network(relus,targets,m=args.m,k=args.k)
             else:
-                loss2 = force_smooth_network(relus,targets,m=args.m)                
+                loss2 = force_smooth_network(relus,targets,m=args.m)
             value = 1/args.gamma
             loss = loss1 + loss2/(value**args.m)
             train_loss2 += loss2.data.item()
@@ -221,12 +221,12 @@ def test(epoch):
             inputs, targets = inputs.cuda(), targets.cuda()
         inputs, targets = Variable(inputs), Variable(targets)
         relus, outputs = net(inputs)
-        loss1 = criterion(outputs, targets) 
+        loss1 = criterion(outputs, targets)
         if args.gamma > 0:
             if args.k > 0:
                 loss2 = force_smooth_network(relus,targets,m=args.m,k=args.k)
             else:
-                loss2 = force_smooth_network(relus,targets,m=args.m)                
+                loss2 = force_smooth_network(relus,targets,m=args.m)
             value = 1/args.gamma
             loss = loss1 + loss2/(value**args.m)
             test_loss2 += loss2.data.item()
@@ -252,12 +252,12 @@ def test(epoch):
     f.write(str(1.*correct/total))
     f.write('\n')
     f.close()
-    
+
     result_test_dict = dict(log_loss=test_loss1/(batch_idx+1),smooth_loss=test_loss2/(batch_idx+1),
     loss=test_loss/(batch_idx+1),accuracy=100.*correct/total,dataset="test")
     dataframe = pd.concat([dataframe,pd.DataFrame(result_test_dict,index=[epoch])])
     dataframe.to_pickle(path + "result_dict.pkl")   #During the code is running we can already see how it's working
-    
+
 def save(epoch):
     net.forward(examples, True, epoch)
 
@@ -266,7 +266,7 @@ def save_model():
         'net': net.module if use_cuda else net,
     }
     torch.save(state, path+'/ckpt.t7')
-    
+
 f = open(path + 'score.txt','w')
 f.write("0.1\n")
 f.close()
@@ -277,7 +277,7 @@ f.close()
 
 if args.da:
     epoch_start = [0,150,250]
-    epoch_end =  [150,250,350]    
+    epoch_end =  [150,250,350]
     for period in range(3):
         if period == 0:
             optimizer = optim.SGD(net.parameters(), lr=0.1, momentum=0.9, weight_decay=5e-4)
@@ -285,18 +285,18 @@ if args.da:
             optimizer = optim.SGD(net.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
         else:
             optimizer = optim.SGD(net.parameters(), lr=0.001, momentum=0.9, weight_decay=5e-4)
-        
+
         for epoch in range(epoch_start[period], epoch_end[period]):
             train(epoch, optimizer)
-            test(epoch)    
+            test(epoch)
 else:
     for period in range(2):
         if period == 0:
-            optimizer = optim.Adam(net.parameters(), lr=0.001)
-        else:
             optimizer = optim.Adam(net.parameters(), lr=0.0001)
-                    
-        for epoch in range(10 * period, 10 * (period + 1)):
+        else:
+            optimizer = optim.Adam(net.parameters(), lr=0.00001)
+
+        for epoch in range(20 * period, 20 * (period + 1)):
             train(epoch, optimizer)
             test(epoch)
 save_model()

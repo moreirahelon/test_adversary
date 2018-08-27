@@ -46,9 +46,9 @@ testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size, shuffle
 #testloader.dataset.data.shape  (26032, 3, 32, 32)
 
 folders = [
-            #["Vanilla","results/False_False_False_0.0_0.0_1_0_True_0/"]
+            ["Vanilla","results/False_False_False_0.0_0.0_1_0_True_0/"]
             #["Adversary","results/True_False_False_0.0_0.0_1_0_True_0/"]
-            ["Adversary + Parseval","results/True_False_False_0.01_0.0_1_0_True_0/"]
+            #["Adversary + Parseval","results/True_False_False_0.01_0.0_1_0_True_0/"]
             #["Smooth","results/False_False_False_0.0_0.01_2_0_True_0/"]
             #["Adversary + Smooth","results/True_False_False_0.0_0.01_2_0_True_0/"]
             #["Adversary + Parseval + Smooth","results/True_False_False_0.01_0.01_2_0_True_0/"]
