@@ -23,24 +23,21 @@ class PreActBlock(nn.Module):
     def __init__(self, in_planes, planes, stride=1):
         super(PreActBlock, self).__init__()
 	# nn.Conv2d(in_channels, out_channels, kernel_size, stride=1, padding=0, dilation=1, groups=1, bias=True)
-	# 64; numero de canais da entrada, num de canais da saida
         self.conv1 = nn.Conv2d(in_planes, planes, kernel_size=3, stride=stride, padding=1, bias=False)
         self.conv2 = nn.Conv2d(planes, planes, kernel_size=3, stride=1, padding=1, bias=False)
 	# BatchNorm2d(num_features, eps=1e-05, momentum=0.1, affine=True, track_running_stats=True)
-	# Normalizacao tanto do input como do output... isso acelera o treinamento
         self.bn1 = nn.BatchNorm2d(in_planes)
         self.bn2 = nn.BatchNorm2d(planes)
 	
-	# Ajuste para fazer funcionar um stride diferente de 1 (senao a convolucao nao funciona)
         if stride != 1 or in_planes != self.expansion*planes:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_planes, self.expansion*planes, kernel_size=1, stride=stride, bias=False)
             )
 
     def forward(self, x):
-        out = x   # --- 100x3x32x32
+        out = x   # --- BatchSizexChannelsxHxW
         out = self.bn1(out)
-        relu1 = F.relu(out)   # --- Eh a funcao ReLU sendo aplicada.. torch.nnFunctional  100x64.32.32
+        relu1 = F.relu(out)
         shortcut = self.shortcut(relu1) if hasattr(self, 'shortcut') else x
         out = self.conv1(relu1)
         out = self.bn2(out)
@@ -71,7 +68,10 @@ class PreActResNet(nn.Module):
         self.layer7 = block(self.in_planes*4, self.in_planes*8, 2)
         self.layer8 = block(self.in_planes*8, self.in_planes*8, 1)
 
-        self.linear = nn.Linear(self.in_planes*8*block.expansion, self.classes)
+        self.layer9 = block(self.in_planes*8, self.in_planes*16, 2)
+        self.layer10 = block(self.in_planes*16, self.in_planes*16, 1)
+        
+        self.linear = nn.Linear(self.in_planes*16*block.expansion, self.classes)
 
         
     def forward(self, x, save=False, epoch=0,normalize=False):
@@ -107,6 +107,13 @@ class PreActResNet(nn.Module):
 
         out = self.layer8(out[2])
         relus.extend(out[:2])        
+
+        out = self.layer9(out[2])
+        relus.extend(out[:2])        
+
+        out = self.layer10(out[2])
+        relus.extend(out[:2])        
+
         
         final_out = F.relu(out[2])   # --- 
         relus.append(final_out)      # --- Coloca no final de relus o obnjeto final_out inteiro

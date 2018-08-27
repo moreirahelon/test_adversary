@@ -154,22 +154,23 @@ def train(epoch, optimizer):
 
             inputs2, targets2 = Variable(inputs[50:]), targets[50:]
             relus2, outputs2 = net(inputs2)
-            relus = list()
-            for a,b in zip(relus1,relus2):
-                relus.append(torch.cat([a,b],0))
+            #relus = list()
+            #for a,b in zip(relus1,relus2):
+            #    relus.append(torch.cat([a,b],0))
             outputs = torch.cat([outputs1, outputs2], 0)
-
+            relus = relus2
             loss1 = 50*criterion(outputs1, targets1) + 50*0.3 * criterion(outputs2,targets2)
             loss1 = loss1/(50+(50*0.3))
         else:
             inputs, targets = Variable(inputs), Variable(targets)
+            targets2 = targets
             relus, outputs = net(inputs)
             loss1 = criterion(outputs, targets)
         if args.gamma > 0:
             if args.k > 0:
-                loss2 = force_smooth_network(relus,targets,m=args.m,k=args.k)
+                loss2 = force_smooth_network(relus,targets2,m=args.m,k=args.k)
             else:
-                loss2 = force_smooth_network(relus,targets,m=args.m)
+                loss2 = force_smooth_network(relus,targets2,m=args.m)
             value = 1/args.gamma
             loss = loss1 + loss2/(value**args.m)
             train_loss2 += loss2.item()
@@ -188,13 +189,13 @@ def train(epoch, optimizer):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum().item()
 
-        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            % (train_loss/(batch_idx+1),
-            100.*correct/total, correct, total))
-
-#        progress_bar(batch_idx, len(trainloader), 'Log Loss: %.3f | Smooth Loss: %.3f | Loss: %.3f | Acc: %.3f%% (%d/%d)'
-#            % (train_loss1/(batch_idx+1),train_loss2/(batch_idx+1),train_loss/(batch_idx+1),
+#        progress_bar(batch_idx, len(trainloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+#            % (train_loss/(batch_idx+1),
 #            100.*correct/total, correct, total))
+
+        progress_bar(batch_idx, len(trainloader), 'CC: %.3f | SM: %.3f | L: %.3f | A: %.3f%% (%d/%d)'
+            % (train_loss1/(batch_idx+1),train_loss2/(batch_idx+1),train_loss/(batch_idx+1),
+            100.*correct/total, correct, total))
     f = open(path + 'score_training.txt','a')
     f.write(str(1.*correct/total))
     f.write('\n')
@@ -244,11 +245,11 @@ def test(epoch):
         total += targets.size(0)
         correct += predicted.eq(targets.data).cpu().sum().item()
 
-        progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
-            % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+#        progress_bar(batch_idx, len(testloader), 'Loss: %.3f | Acc: %.3f%% (%d/%d)'
+#            % (test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
-#        progress_bar(batch_idx, len(testloader), 'Log Loss: %.3f | Smooth Loss: %.3f | Loss: %.3f | Acc: %.3f%% (%d/%d)'
-#            % (test_loss1/(batch_idx+1),test_loss2/(batch_idx+1),test_loss/(batch_idx+1), 100.*correct/total, correct, total))
+        progress_bar(batch_idx, len(testloader), 'CC: %.3f | SM: %.3f | L: %.3f | A: %.3f%% (%d/%d)'
+            % (test_loss1/(batch_idx+1),test_loss2/(batch_idx+1),test_loss/(batch_idx+1), 100.*correct/total, correct, total))
 
     # Save checkpoint.
     acc = 100.*correct/total

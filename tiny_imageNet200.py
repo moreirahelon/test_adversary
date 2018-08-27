@@ -89,7 +89,13 @@ transform_test = transforms.Compose([
 ])
 
 trainset = torchvision.datasets.ImageFolder('/home/brain/tiny-imagenet-200/train', transform=transform_train)
-trainloader = torch.utils.data.DataLoader(trainset, batch_size=50, shuffle=True, num_workers=2)
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=100000, shuffle=True, num_workers=2)
+
+for a,b in trainloader:
+    print(a.shape + "\n") # (100000,3,64,64) 
+    print('Mean: {} \n'.format(np.mean(train.numpy(), axis=(0, 2, 3))))
+    print('STD: {} \n'.format(np.std(train.numpy(), axis=(0, 2, 3))))
+raise Exception("DIE DIE DIE") 
 
 testset = torchvision.datasets.ImageFolder('/home/brain/tiny-imagenet-200/val/new_images', transform=transform_test)
 
